@@ -19,4 +19,8 @@ python3 cpplintSearchAll.py   <br/>
 
 
 # TODO
-支持对单个仓，比如linux-kernel下面也能够进行检索工作
+支持对单个仓，比如linux-kernel下面也能够进行检索工作     <br/>
+支持 search commit xxx  [IGNORE xxx]     // 不在某些仓中搜寻对应的commit        <br/>
+支持 search commit xxx  [repo   xxx]     // 支持在某些仓中搜索对应的commit      <br/>
+支持 search all author                   // 列出所有的开发者邮箱                <br/>
+支持 search all author repo xxx          // 列出在xxx 仓库开发的所有开发者名单  <br/>
