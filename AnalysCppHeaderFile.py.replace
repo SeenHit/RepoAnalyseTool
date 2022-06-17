@@ -1,12 +1,28 @@
 import os
 
 listAll = []
+number = 0
 
 def GetFileNameFromLine(line):
     pos = line.rfind('/')
     if (pos != -1):
         return line[pos + 1 :]
     return line
+
+def InsertList(list, fileName):
+    global number
+    if (len(list) == 0):
+        return
+    for i in range(0, len(list)):
+        cmd = "sed -i \"" + str(number) + "i" + list[i] + "\"" + " " + fileName
+        print ("cmd 1 is " + cmd)
+        number = number + 1
+        os.system(cmd)
+    cmd = "sed -i \"" + str(number) + "i" + "" + "\"" + " " + fileName
+    print ("cmd 2 is " + cmd)
+    number = number + 1
+    os.system(cmd)
+    return
 
 def PrintList(list):
     if (len(list) == 0):
@@ -32,6 +48,7 @@ def cmpList(listAll, listNow):
 def dealCppData(fileName):
     file = open("cppdata")
     global listAll
+    global number
     #print ("fileName is " + fileName)
 
     # 元素声明
@@ -50,12 +67,19 @@ def dealCppData(fileName):
     shortName = GetFileNameFromLine(fileName).replace(".cpp", "")
     #print ("shortName is " + shortName)
 
+    count = 0
+    startNumber = 0
+    endNumber = 0
     while True:
         line = file.readline().rstrip('\n')
+        count = count + 1
         if not line:
             break
         strlist = line.split(':')
         headInfo = strlist[1]
+        if (count == 1):
+            startNumber = int(strlist[0])
+        endNumber = int(strlist[0])
         listNow.append(headInfo)
         #print (headInfo)
         expr1 = shortName + ".h"
@@ -82,8 +106,13 @@ def dealCppData(fileName):
     AppendList(listcpp)
     AppendList(listothers)
 
+    number = startNumber
     # cmpList
     if (cmpList(listAll, listNow) == False):
+        # 删除文件内容，并且替换文件内容
+        cmd = "sed -i '" + str(startNumber) + "," + str(endNumber) + "d' " + fileName
+        os.system(cmd) 
+
         print ("文件 " + fileName + " 头文件包含顺序出现了差错")
         print ("当前顺序为:")
         PrintList(listNow)
@@ -96,7 +125,16 @@ def dealCppData(fileName):
         print ()
         print ()
 
+        # 插入数据
+        InsertList(listMyself, fileName)
+        InsertList(listc, fileName)
+        InsertList(listsys, fileName)
+        InsertList(listcpp, fileName)
+        InsertList(listothers, fileName)
+        
+
     listAll.clear()
+    number = 0
 
 os.system("find * -name *.cpp >data")
 file = open("data")
@@ -107,3 +145,4 @@ while True:
     cmd = "grep \"#include\" " + line + " -nr > cppdata"
     os.system(cmd)
     dealCppData(line)
+    os._exit(0)
