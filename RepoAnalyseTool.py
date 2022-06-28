@@ -57,7 +57,7 @@ def getAbsPath():
 def getAllCommit():
     absPath = getAbsPath()
     dataPath = "RepoTool/data"
-    os.system("find * -name *.git > " + dataPath)
+    os.system("find * -name \"*.git\" > " + dataPath)
     os.system("nohup sed -i 's/\/.git//g' " + dataPath)
     file = open(dataPath)
     while True:
