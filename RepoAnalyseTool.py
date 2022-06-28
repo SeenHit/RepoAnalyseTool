@@ -42,6 +42,41 @@ def seachAllRepo(reponame):
     if (count == 0):
         print ("没有您想要的检索结果")
 
+def checkRepoStatus(filePath):
+    try:
+        #print ("filePath is " + filePath)
+        file = open(filePath)
+        while True:
+            line = file.readline().rstrip('\n')
+            if not line:
+                break
+            if "modified" in line:
+                file.close()
+                return True
+        file.close()
+        return False
+    except:
+        return False
+
+def searchModifiedRepo():
+    dataPath = "RepoTool/data"
+    #os.system("find * -name *.git > " + dataPath)
+    #os.system("nohup sed -i 's/\/.git//g' " + dataPath)
+    file = open(dataPath)
+    count = 0
+    while True:
+        line = file.readline().rstrip('\n')
+        if not line:
+            break
+        repoName = getRepoNameFromLine(line)
+        cmd = "cd " + line + ";" + "git status > statusTmp ; cd -"
+        os.system(cmd)
+        filePath = line + "/statusTmp"
+        if checkRepoStatus(filePath):
+            cloneUrl = getGitCloneUrl(line)
+            print ("该仓库最近有修改，路径为:" + line + "   仓库名为:" + repoName + " 克隆url是:" + cloneUrl)
+            continue
+
 def getRepoNameFromLine(line):
     pos = line.rfind("/")
     if (pos != -1):
@@ -176,6 +211,9 @@ cmd = sys.argv[1]
 # 需要更新所有的资源
 if (cmd == "update"):
     updateAllResources()
+
+if (cmd == "modified"):
+    searchModifiedRepo()
 
 if (cmd == "listall"):
     if (len(sys.argv) < 3):
