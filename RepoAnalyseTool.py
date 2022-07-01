@@ -20,7 +20,7 @@ def getGitCloneUrl(repoPath):
     url = file.readline().rstrip('\n')
     pos = url.find("git")
     os.system("rm -rf " + repoPath + "/remoteInfo")
-    return url[pos :] 
+    return url[pos :]
 
 def seachAllRepo(reponame):
     dataPath = "RepoTool/data"
@@ -104,12 +104,12 @@ def getAllCommit():
             os.system("cd " + line + "; nohup git log --oneline > "  + absPath + "/RepoTool/" + repoName + "_commitInfo")
     os.system("cd -")
     os.system("cat *_commitInfo > wholeCommit")
-    
+
 def CommitSearch(keyword):
     #getAllCommit()
     os.system("cd RepoTool; grep \"" + keyword + "\" * -nr > searchResult")
     os.system("cd RepoTool; nohup sed -i 's/_commitInfo//g' searchResult")
-    
+
     file = open("RepoTool/searchResult")
     while True:
         line = file.readline().rstrip('\n')
@@ -183,16 +183,26 @@ def IsNeedUpate():
     if (count != 0):
         return False
     return True
-    
+
 
 def updateAllResources():
     # 先删除原来的所有的资源
     os.system("cd RepoTool; rm -rf *")
     # 更新新资源进来
     getAllCommit()
-    
-    
-storageDir = "RepoTool" 
+
+def PrintUsage():
+    print ("Usage:")
+    print ("python3 RepoAnalyseTool.py update                          // update repo data")
+    print ("python3 RepoAnalyseTool.py modified                        // list all repository has been changed")
+    print ("python3 RepoAnalyseTool.py listall repo                    // list all repo")
+    print ("python3 RepoAnalyseTool.py search repo {repoName}          // search some repo")
+    print ("python3 RepoAnalyseTool.py search commit {description}     // search relate commit to description")
+    print ("python3 RepoAnalyseTool.py show repo {repoName}            // show repo detailed info")
+    print ("python3 RepoAnalyseTool.py show commit {commitid}          // show a commit info")
+
+
+storageDir = "RepoTool"
 if (os.path.exists(storageDir) == 0):
     os.system("mkdir " + storageDir)
 #getAllRepo()
@@ -208,6 +218,10 @@ cmd = sys.argv[1]
 #print (cmd)
 #print (len(sys.argv))
 
+if ("-h" in cmd or "--help" in cmd):
+    PrintUsage()
+    os._exit(0)
+
 # 需要更新所有的资源
 if (cmd == "update"):
     updateAllResources()
@@ -218,6 +232,7 @@ if (cmd == "modified"):
 if (cmd == "listall"):
     if (len(sys.argv) < 3):
         print ("您没有输入option参数，请输入option参数")
+        PrintUsage()
         os._exit(0)
     option = sys.argv[2]
     if (option == "repo"):
@@ -226,11 +241,13 @@ if (cmd == "listall"):
         getAllRepo()
     else:
         print ("不支持的命令!")
+        PrintUsage()
     os._exit(0)
 
 if (cmd == "search"):
     if (len(sys.argv) < 4):
         print ("您没有输入option参数，请输入option参数")
+        PrintUsage()
         os._exit(0)
     option = sys.argv[2]
     if (option == "repo"):
@@ -244,16 +261,18 @@ if (cmd == "search"):
         commitKeyword = sys.argv[3]
         CommitSearch(commitKeyword)
     else:
+        PrintUsage()
         print ("不支持的命令!")
     os._exit(0)
 
 if (cmd == "show"):
     if (len(sys.argv) < 4):
         print ("您没有输入commit参数，请输入option参数")
+        PrintUsage()
         os._exit(0)
     if IsNeedUpate():
         updateAllResources()
-    
+
     option = sys.argv[2]
     if (option == "repo"):
         repo = sys.argv[3]
@@ -262,5 +281,6 @@ if (cmd == "show"):
         commitID = sys.argv[3]
         ShowCommitID(commitID)
     else:
+        PrintUsage()
         print ("不支持的命令!")
     os._exit(0)
