@@ -191,12 +191,71 @@ def updateAllResources():
     # 更新新资源进来
     getAllCommit()
 
+def GetPersonInfoFromCommit(localPath, commit, keyword):
+    cmd = "cd " + localPath + "; git show " + commit + " > commitInfo"
+    os.system(cmd)
+
+    dataPath = localPath + "/commitInfo"
+    f_data = open(dataPath)
+    commitLine = ""
+    while True:
+        try:
+            commitLine = f_data.readline()
+            if not commitLine:
+                break
+            commitLine = commitLine.rstrip('\n')
+            if ("Author:" in commitLine):
+                break
+        except:
+            return False
+    pos = commitLine.find(":")
+    msgInfo = commitLine[pos + 2 :]
+    pos = msgInfo.find("<")
+    author = msgInfo[0 : pos - 1]
+    mailInfo = msgInfo[pos + 1 : ].rstrip('>')
+    if (keyword in author or keyword in mailInfo):
+        return True
+
+
+def GetCommitInfoFromPath(localPath, keyword):
+    cmd = "cd " + localPath + "; git log --oneline > data20228888"
+    os.system(cmd)
+
+    dataPath = localPath + "/data20228888"
+    f_data = open(dataPath)
+    while True:
+        try:
+            commitInfo = f_data.readline().rstrip('\n')
+            if not commitInfo:
+                break
+            strlist = commitInfo.split(' ')
+            commitID = strlist[0]
+            rc = GetPersonInfoFromCommit(localPath, commitID, keyword)
+            if (rc == True):
+                print ("在 " + localPath + " 仓库找到了作者 " + keyword + "的提交，请进入仓库查看!")
+                break
+        except:
+            continue
+    os.system("rm -rf " + localPath + "/data20228888")
+
+def authorSearch(keyword):
+    dataPath = "RepoTool/data"
+    file = open(dataPath)
+    while True:
+        line = file.readline().rstrip('\n')
+        if not line:
+            break
+        repoName = getRepoNameFromLine(line)
+        if os.path.isdir(line):
+            GetCommitInfoFromPath(line, keyword)
+
 def PrintUsage():
     print ("Usage:")
     print ("python3 RepoAnalyseTool.py update                          // update repo data")
     print ("python3 RepoAnalyseTool.py modified                        // list all repository has been changed")
     print ("python3 RepoAnalyseTool.py listall repo                    // list all repo")
-    print ("python3 RepoAnalyseTool.py search repo {repoName}          // search some repo")
+    print ("python3 RepoAnalyseTool.py search repo   {repoName}          // search some repo")
+    print ("python3 RepoAnalyseTool.py search author {authorName}        // search author contribute to kernel")
     print ("python3 RepoAnalyseTool.py search commit {description}     // search relate commit to description")
     print ("python3 RepoAnalyseTool.py show repo {repoName}            // show repo detailed info")
     print ("python3 RepoAnalyseTool.py show commit {commitid}          // show a commit info")
@@ -260,6 +319,11 @@ if (cmd == "search"):
             updateAllResources()
         commitKeyword = sys.argv[3]
         CommitSearch(commitKeyword)
+    elif (option == "author"):
+        if IsNeedUpate():
+            updateAllResources()
+        authorKeyword = sys.argv[3]
+        authorSearch(authorKeyword)
     else:
         PrintUsage()
         print ("不支持的命令!")
